@@ -1,4 +1,4 @@
-%% -*- mode: nitrogen -*-
+%% -*- mode: erlang -*-
 -module(bapp_server).
 -behaviour(gen_server).
 -author('vkuznet@gmail.com').
@@ -50,8 +50,7 @@ handle_call({status, guid, Guid}, _From, _State) ->
     Result = pid_manager:info_guid(Guid),
     {reply, ok, Result};
 handle_call({status, pid, {Node, PidStr}}, _From, _State) ->
-    Pid = list_to_pid(PidStr),
-    Result = pid_manager:process_info_wrapper(Node, Pid),
+    Result = pid_manager:pinfo(Node, PidStr),
     {reply, ok, Result};
 handle_call({process, Cmd, Dir}, _From, _State) ->
     Files = filelib:wildcard(Dir ++ "/*.in"),
