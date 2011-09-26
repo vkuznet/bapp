@@ -1,4 +1,4 @@
-%% -*- mode: nitrogen -*-
+%% -*- mode: erlang -*-
 -module(sync_worker).
 -author('vkuznet@gmail.com').
 -export([execute/2,black_box/3]).
