@@ -1,0 +1,11 @@
+*~
+*.beam
+*.pyc
+*.so
+.*.swp
+*.log
+apps/bapp/ebin/
+rel/mynode/
+setup.sh
+setup_linux.sh
+MANIFEST
