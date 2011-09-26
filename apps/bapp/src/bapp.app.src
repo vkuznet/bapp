@@ -1,0 +1,13 @@
+{application, bapp,
+ [
+  {description, "My App"},
+  {vsn, "1"},
+  {modules, [bapp_app, bapp_sup, bapp_server]},
+  {registered, []},
+  {applications, [
+                  kernel,
+                  stdlib
+                 ]},
+  {mod, { bapp_app, []}},
+  {env, []}
+ ]}.

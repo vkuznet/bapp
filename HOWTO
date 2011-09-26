@@ -1,0 +1,166 @@
+This HOWTO describes procedure to make stand-along Erlang application.
+
+All instructions how to create a full working Erlang application 
+can be found [1-5].
+
+Instructions:
+=============
+
+We will assume that you do have all working system with the following tools:
+vim, git, Erlang, etc.
+
+1. Obtain rebar distribution (rebar is a build tool for Erlang).
+
+git clone https://github.com/basho/rebar.git
+cd rebar
+./bootstrap
+
+At this step we do have rebar.
+
+2. Create you favorite package, e.g. myapp
+
+mkdir myapp
+cd myapp
+copy rebar to local dir
+
+3. Create a template for your application, for simplicity we will call it myapp too.
+
+./rebar create-app appid=myapp
+./rebar -v compile
+./rebar clean
+
+4. At this step you are all set and can start coding. We start with
+configuring myapp.app.src file. We add description, change (if appropriate)
+the version number and add module list to be build, e.g.
+
+  {description, "My Favorite App"},
+  {vsn, "1"},
+  {modules, [bapp_app, bapp_sup, bapp_server]},
+
+
+Now, let us create server template (for completeness we list available
+templates first):
+
+./rebar list-templates
+./rebar create template=simplesrv
+mv src/myserver.erl  src/myapp_server.erl
+
+At this step you have OTP server. Just remember to change module name from
+myserver to match the name of the file you choose for your server, e.g.
+
+vim src/myapp_server.erl
+:%s/myserver/myapp_server/g
+
+Add a new methods, say_hello is a API call to gen_server which sends hello message, e.g.
+
+-export([say_hello/0]). % say_hello is a test API, can be removed later
+
+say_hello() ->
+    gen_server:call(?MODULE, hello).
+handle_call(hello, _From, State) ->
+    io:format("Hello from server!~n", []),
+    {reply, ok, State};
+
+Compile/clean everything
+
+./rebar compile
+./rebar clean
+
+Correct src/myapp.app.src and modify myapp_srv to myapp_server
+
+Edit src/myapp_sup.erl and modify init method as
+
+init([]) ->
+    MySimpleServer = ?CHILD(myapp_server, worker),
+    {ok, { {one_for_one, 5, 10}, [MySimpleServer]} }.
+
+This is done to ensure that myapp_server is a child of supervisor code
+
+Compile/clean everything
+./rebar compile
+
+5. Create apps directory and move files.
+
+Let’s pretend the project consists of more than one OTP application. 
+We will move the application we created into a subdirectory where 
+it will rest next to future siblings.
+
+mkdir -p apps/myapp
+mv src apps/myapp
+
+6. Create rebar.config file with the following content
+
+{sub_dirs, ["apps/myapp", "rel"]}.
+
+it will instruct rebar about our application.
+
+Compile everything
+./rebar compile
+
+7. Create release area and erlang node for our application
+
+mkdir rel
+cd rel
+../rebar create-node nodeid=mynode
+
+Edit reltool.config
+
+Edit the ‘reltool.config’ file found In the release directory. 
+Put "../apps" in the "lib_dirs" section, and "myapp" in the 
+list of applications in rel "mynode", "1", [...HERE....]
+
+Go to the root directory
+cd ..
+
+From root directory create a release
+
+./rebar -v generate
+
+Check content of newly created rel area
+ls rel/mynode/
+bin        erts-5.8.4 etc        lib        log        releases
+
+Voila, everything is in place and you are ready to go.
+
+8. Test application as
+
+sh rel/mynode/bin/mynode console
+Exec: /Users/vk/Work/Erlang/myapp/rel/mynode/erts-5.8.4/bin/erlexec -boot /Users/vk/Work/Erlang/myapp/rel/mynode/releases/1/mynode -mode embedded -config /Users/vk/Work/Erlang/myapp/rel/mynode/etc/app.config -args_file /Users/vk/Work/Erlang/myapp/rel/mynode/etc/vm.args -- console
+Root: /Users/vk/Work/Erlang/myapp/rel/mynode
+Erlang R14B03 (erts-5.8.4) [source] [64-bit] [smp:2:2] [rq:2] [async-threads:5] [hipe] [kernel-poll:true] 
+
+Eshell V5.8.4  (abort with ^G)
+(mynode@127.0.0.1)1> application:which_applications().
+[{myapp,"My Simple App","1"},
+ {sasl,"SASL  CXC 138 11","2.1.9.4"},
+ {stdlib,"ERTS  CXC 138 10","1.17.4"},
+ {kernel,"ERTS  CXC 138 10","2.14.4"}]
+(mynode@127.0.0.1)2> 
+
+9. Change node configuration if it is required, e.g. set cookie, etc. The configuration
+template is in rel/files/vm.args. It will be used by rebar to build a release configuration
+file.
+
+10. Optionally (but very convenient) create a custom Makefile to perform
+compile, release generation, clean-up steps. Here is skeleton of Makefile you may use.
+
+all: compile generate
+dist: clean tarball
+compile:
+	@(export PATH=`pwd`/`echo erts-*/bin`:$$PATH; echo "Using Erlang in `which erl`"; ./rebar compile)
+generate:
+	@(export PATH=`pwd`/`echo erts-*/bin`:$$PATH; echo "Using Erlang in `which erl`"; ./rebar generate force=1)
+tarball:
+	@(cd ..; echo "Built tarball $$PWD/bapp.tar.gz"; tar cfz bapp.tar.gz bapp; cd -)
+clean:
+	@(export PATH=`pwd`/`echo erts-*/bin`:$$PATH; ./rebar clean; find . -name "*~" -exec rm {} \;)
+
+References:
+===========
+
+1. http://alancastro.org/2010/05/01/erlang-application-management-with-rebar.html
+2. http://skeptomai.com/?p=56
+3. https://bitbucket.org/basho/rebar/wiki/ReleaseHandling
+4. http://erlang.org/pipermail/erlang-questions/2011-April/057908.html
+5. http://www.apacheserver.net/Riak-compile-error-Module-gen_server2-potentially-included-by-two-at1312518.htm
+

@@ -1,0 +1,129 @@
+#!/usr/bin/env python
+#-*- coding: ISO-8859-1 -*-
+"""
+File: erl_client.py
+Author: Valentin Kuznetsov <vkuznet@gmail.com>
+Description: A python client which access Erland bapp_server
+"""
+
+import sys
+import json
+import pyerl
+import types
+import socket
+from optparse import OptionParser
+from pyerl_utils.utils import convert, convert_str, convert_list_to_str, ErlTuple, ErlGen
+
+if sys.version_info < (2, 6):
+    raise Exception("DAS requires python 2.6 or greater")
+
+class DASOptionParser: 
+    """
+    DAS cli option parser
+    """
+    def __init__(self):
+        self.parser = OptionParser()
+        self.parser.add_option("-c", "--cmd", action="store", type="string", 
+                                          default="", dest="command",
+             help="specify command to run")
+
+        self.parser.add_option("--test", action="store_true", dest="test", default=True,
+             help="test mode")
+
+        self.parser.add_option("--status", action="store", type="string", 
+                                          default="", dest="status",
+             help="obtain status for a job, must provide job id")
+    def getOpt(self):
+        """
+        Returns parse list of options
+        """
+        return self.parser.parse_args()
+
+def test_black_box(sock, server, icmd, idir):
+    api = "handle_call"
+    atom = pyerl.mk_atom("process")
+    cmd  = pyerl.mk_string(icmd)
+    name = pyerl.mk_string(idir)
+    tup = pyerl.mk_tuple((atom, cmd, name))
+    pid = pyerl.mk_pid("node", 1, 2, 3)
+    state = pyerl.mk_atom("atom") # passed state to server is irrelevant in this call
+    args = pyerl.mk_list([tup, pid, state])
+    eterm = pyerl.rpc(sock, server, api, args)
+    return eterm
+
+def get_status(sock, server, node, what, value):
+    api   = "handle_call"
+    status= pyerl.mk_atom("status")
+    if  what == 'node':
+        val = pyerl.mk_atom(value)
+    elif what == 'guid':
+        val = pyerl.mk_int(int(value))
+    elif what == 'pid':
+        a,b,c = value.split('.')
+        nodename = pyerl.mk_atom(a)
+        ppid = pyerl.mk_string('<0.%s.%s>' % (b, c))
+        val   = pyerl.mk_tuple((nodename, ppid))
+    else:
+        raise Exception('Unknown message: %s' %  what)
+    what  = pyerl.mk_atom(what)
+    pid   = pyerl.mk_pid("node", 1, 2, 3)
+    state = pyerl.mk_atom("atom") # passed state to server is irrelevant in this call
+    tup   = pyerl.mk_tuple((status, what, val))
+    args  = pyerl.mk_list([tup, pid, state])
+    eterm = pyerl.rpc(sock, server, api, args)
+    return eterm
+
+def connect(host, cmd, idir, status=''):
+    # set communication channel to our Erlang node, user must specify host, node
+    # name, cookie.
+    addr = socket.gethostbyaddr(host)
+    hostname, aliaslist, addresslist = socket.gethostbyaddr(host)
+    addr = addresslist[0]
+    name = "mynode"
+    node = name + "@" + hostname
+    cookie = "cookiestring"
+    # initialize the erl_connect module, see http://www.erlang.org/doc/man/erl_connect.html
+    ret  = pyerl.connect_xinit(host, name, node, addr, cookie, 1)
+    sock = pyerl.xconnect(addr, name)
+    if  sock < 0: # fail to connect
+        print "Fail to connect to Erlang node"
+        sys.exit(0)
+#    print "connect to node=%s, addr=%s, sock=%s" % (node, addr, sock)
+
+    # call test code
+    server = "bapp_server"
+    if  status:
+        what, val = status
+        eterm = get_status(sock, server, name, what, val)
+    else:
+        eterm = test_black_box(sock, server, cmd, idir)
+    print "server reply:", eterm
+
+    # close connection to our server
+    pyerl.close_connection(sock)
+
+if __name__ == '__main__':
+    optManager  = DASOptionParser()
+    (opts, args) = optManager.getOpt()
+
+    test_dir = '/'.join(__file__.split('/')[:-1])
+    host = 'localhost'
+    cmd  = '%s/%s' % (test_dir, 'test.py')
+    idir = '%s/input_files' % test_dir
+
+    if  opts.command.find('tune_scan') != -1:
+        host = 'lnxcu9'
+        cmd = '/home/vk/Cornell/CesrTA/tune_scan'
+        idir = '/home/vk/Cornell/CesrTA/input_files2'
+    if  not opts.test:
+        host = 'localhost'
+        cmd = opts.command
+        idir = '%s/input_files' % test_dir
+    if  opts.test and opts.command.find('tune_scan') != -1:
+        host = 'localhost'
+        cmd = '%s/%s' % (test_dir, 'test.py')
+        idir = '%s/input_files' % test_dir
+    if  opts.status:
+        connect(host, cmd, idir, opts.status.split(','))
+    else:
+        connect(host, cmd, idir)
