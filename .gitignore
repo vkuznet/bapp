@@ -6,6 +6,7 @@
 *.log
 apps/bapp/ebin/
 rel/mynode/
+client/input_files
 setup.sh
 setup_linux.sh
 MANIFEST
