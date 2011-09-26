@@ -39,7 +39,7 @@ get_unix_timestamp(TS) ->
 %% We use get_unix_timestamp as a GUID.
 %% ------------------------------------------------------------------
 execute(Cmd, Files) ->
-    GUID = get_unix_timestamp(now),
+    GUID = get_unix_timestamp(now()),
     Pid = spawn(?MODULE, loop, [GUID, Cmd, Files]),
     {GUID, Pid}.
 
