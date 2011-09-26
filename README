@@ -78,3 +78,11 @@ an output file in the same area.
 References:
 ===========
 1. http://www.erlang.org/doc/design_principles/users_guide.html 
+
+Author:
+=======
+Valentin Kuznetsov <vkuznet [at] gmail [dot] com>
+
+License:
+========
+MIT, http://www.opensource.org/licenses/mit-license.php
