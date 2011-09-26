@@ -76,7 +76,7 @@ loop(GUID, Cmd, [File|Files]) ->
             % be done/fail/etc., such that pid_manager will not be able to
             % add it.
             io:format("New job ~p ~p~n", [Node, Cmd++" "++File]),
-            Pid = spawn(Node, os, cmd, [Cmd++" "++File++" "++DevNull]),
+            Pid = spawn(Node, os, cmd, [Cmd++" "++File]),
             case pid_manager:add(GUID, Node, Pid) of
                 skip ->
                     loop(GUID, Cmd, [File|Files]);
