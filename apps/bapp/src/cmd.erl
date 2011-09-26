@@ -1,4 +1,4 @@
-%% -*- mode: nitrogen -*-
+%% -*- mode: erlang -*-
 -module(cmd).
 -author('vkuznet@gmail.com').
 -export([run/1, run/2, test/0]).
