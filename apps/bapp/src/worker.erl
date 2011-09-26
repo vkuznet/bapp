@@ -1,7 +1,7 @@
 %% -*- mode: nitrogen -*-
 -module(worker).
 -author('vkuznet@gmail.com').
--export([execute/2, get_slot/1, loop/3]).
+-export([execute/2, get_slot/1, loop/3, get_unix_timestamp/1]).
 -define(SLEEP_INTERVAL, 5000).
 -define(NODE_THRESHOLD, 2).
 
@@ -23,13 +23,23 @@ connect([]) ->
     ok.
 
 %% ------------------------------------------------------------------
+%% Get UNIX timestamp
+%% Courtesy of
+%% http://erlangdevelopers.splinder.com/post/16144262/stdlib-unix-timestamp-in-erlang
+%% ------------------------------------------------------------------
+get_unix_timestamp(TS) ->
+    calendar:datetime_to_gregorian_seconds( calendar:now_to_universal_time(TS) ) -
+            calendar:datetime_to_gregorian_seconds( {{1970,1,1},{0,0,0}} ).
+
+%% ------------------------------------------------------------------
 %% Concurrently execute black_box function for a given set of files 
 %% and given command. The logic is following. We start wait_loop to
 %% collect possible results and pass its Pid into main loop which
-%% executes black_box function. The set of results are set externally
+%% executes black_box function. The set of results are set externally.
+%% We use get_unix_timestamp as a GUID.
 %% ------------------------------------------------------------------
 execute(Cmd, Files) ->
-    GUID = 1, % global unique id for request
+    GUID = get_unix_timestamp(now),
     Pid = spawn(?MODULE, loop, [GUID, Cmd, Files]),
     {GUID, Pid}.
 
