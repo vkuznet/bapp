@@ -1,4 +1,4 @@
-%% -*- mode: nitrogen -*-
+%% -*- mode: erlang -*-
 -module(bapp_sup).
 
 -behaviour(supervisor).
