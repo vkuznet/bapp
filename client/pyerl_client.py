@@ -124,11 +124,6 @@ if __name__ == '__main__':
     cmd  = opts.command
     idir = opts.dir
 
-    if  opts.command.find('tune_scan') != -1:
-        cmd = '/home/vk/Cornell/CesrTA/tune_scan'
-        idir = '/home/vk/Cornell/CesrTA/input_files2'
-    if  not opts.test:
-        cmd = opts.command
     if  opts.test and not opts.command:
         test_dir = '/'.join(__file__.split('/')[:-1])
         if  test_dir == '.':
