@@ -5,7 +5,7 @@ File: erl_client.py
 Author: Valentin Kuznetsov <vkuznet@gmail.com>
 Description: A python client which access Erland bapp_server
 """
-
+import os
 import sys
 import json
 import pyerl
@@ -22,17 +22,31 @@ class DASOptionParser:
     DAS cli option parser
     """
     def __init__(self):
+        status_usage  = "Obtain status on a server. Acceptable formats:\n"
+        status_usage += "--status=guid,123\n"
+        status_usage += "--status=pid,mynode.718.0\n"
+        status_usage += "--status=node,mynode\n"
+        test_dir = '/'.join(__file__.split('/')[:-1])
+        if  test_dir == '.':
+            test_dir = os.getcwd() + "/input_files"
         self.parser = OptionParser()
-        self.parser.add_option("-c", "--cmd", action="store", type="string", 
+        self.parser.add_option("--cmd", action="store", type="string", 
                                           default="", dest="command",
              help="specify command to run")
-
+        self.parser.add_option("--dir", action="store", type="string", 
+                                          default=test_dir, dest="dir",
+             help="specify input dir")
+        self.parser.add_option("--host", action="store", type="string", 
+                                          default="localhost", dest="host",
+             help="specify host name of bapp server")
+        self.parser.add_option("--cookie", action="store", type="string", 
+                                          default="cookiestring", dest="cookie",
+             help="specify cookie string for bapp server")
         self.parser.add_option("--test", action="store_true", dest="test", default=True,
              help="test mode")
-
         self.parser.add_option("--status", action="store", type="string", 
                                           default="", dest="status",
-             help="obtain status for a job, must provide job id")
+             help=status_usage)
     def getOpt(self):
         """
         Returns parse list of options
@@ -73,7 +87,7 @@ def get_status(sock, server, node, what, value):
     eterm = pyerl.rpc(sock, server, api, args)
     return eterm
 
-def connect(host, cmd, idir, status=''):
+def connect(host, cookie, cmd, idir, status=''):
     # set communication channel to our Erlang node, user must specify host, node
     # name, cookie.
     addr = socket.gethostbyaddr(host)
@@ -81,7 +95,6 @@ def connect(host, cmd, idir, status=''):
     addr = addresslist[0]
     name = "mynode"
     node = name + "@" + hostname
-    cookie = "cookiestring"
     # initialize the erl_connect module, see http://www.erlang.org/doc/man/erl_connect.html
     ret  = pyerl.connect_xinit(host, name, node, addr, cookie, 1)
     sock = pyerl.xconnect(addr, name)
@@ -106,24 +119,23 @@ if __name__ == '__main__':
     optManager  = DASOptionParser()
     (opts, args) = optManager.getOpt()
 
-    test_dir = '/'.join(__file__.split('/')[:-1])
-    host = 'localhost'
-    cmd  = '%s/%s' % (test_dir, 'test.py')
-    idir = '%s/input_files' % test_dir
+    cookie = opts.cookie
+    host = opts.host
+    cmd  = opts.command
+    idir = opts.dir
 
     if  opts.command.find('tune_scan') != -1:
-        host = 'lnxcu9'
         cmd = '/home/vk/Cornell/CesrTA/tune_scan'
         idir = '/home/vk/Cornell/CesrTA/input_files2'
     if  not opts.test:
-        host = 'localhost'
         cmd = opts.command
-        idir = '%s/input_files' % test_dir
-    if  opts.test and opts.command.find('tune_scan') != -1:
-        host = 'localhost'
+    if  opts.test and not opts.command:
+        test_dir = '/'.join(__file__.split('/')[:-1])
+        if  test_dir == '.':
+            test_dir = os.getcwd()
         cmd = '%s/%s' % (test_dir, 'test.py')
-        idir = '%s/input_files' % test_dir
+    print "Invoke host: %s, cmd: %s, idir: %s" % (host, cmd, idir)
     if  opts.status:
-        connect(host, cmd, idir, opts.status.split(','))
+        connect(host, cookie, cmd, idir, opts.status.split(','))
     else:
-        connect(host, cmd, idir)
+        connect(host, cookie, cmd, idir)
