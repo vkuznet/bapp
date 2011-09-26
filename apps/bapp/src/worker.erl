@@ -1,4 +1,4 @@
-%% -*- mode: nitrogen -*-
+%% -*- mode: erlang -*-
 -module(worker).
 -author('vkuznet@gmail.com').
 -export([execute/2, get_slot/1, loop/3, get_unix_timestamp/1]).
@@ -47,9 +47,9 @@ execute(Cmd, Files) ->
 %% Provides first available slot on participating nodes
 %% ------------------------------------------------------------------
 get_slot([Node|Nodes]) ->
-    io:format("get_slot ~p~n", [[Node|Nodes]]),
+%    io:format("get_slot ~p~n", [[Node|Nodes]]),
     Status = pid_manager:info_node(Node),
-    io:format("Status ~p~n", [Status]),
+%    io:format("Status ~p~n", [Status]),
     if  length(Status) < ?NODE_THRESHOLD ->
         {available, Node};
         true ->
@@ -71,13 +71,11 @@ loop(GUID, Cmd, [File|Files]) ->
             timer:sleep(?SLEEP_INTERVAL),
             loop(GUID, Cmd, [File|Files]);
          {available, Node} ->
-%            DevNull = "2>&1 1>& /dev/null",
-            DevNull = " ",
             % NOTE: this is not atomic operation, I get Pid and then
             % add it to pid_manager, but during that time, process can
             % be done/fail/etc., such that pid_manager will not be able to
             % add it.
-            io:format("Execute ~p ~p~n", [Node, Cmd++" "++File++" "++DevNull]),
+            io:format("New job ~p ~p~n", [Node, Cmd++" "++File]),
             Pid = spawn(Node, os, cmd, [Cmd++" "++File++" "++DevNull]),
             case pid_manager:add(GUID, Node, Pid) of
                 skip ->
