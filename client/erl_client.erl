@@ -1,10 +1,9 @@
 #!/usr/bin/env escript
 %% -*- erlang -*-
-%%! -sname testnode@vklaptop -setcookie cookiestring
+%%! -sname testnode -setcookie cookiestring
 -module(client).
 -compile(export_all).
--define(NODE, mynode@vklaptop).
--define(FROM, testnode@vklaptop).
+-define(FROM, testnode).
 -define(STATUS, 1).
 
 %% ------------------------------------------------------------------
@@ -41,7 +40,7 @@ test(Node, Arg) ->
 %% Handle usage message
 %% ------------------------------------------------------------------
 usage() ->
-    io:format("Usage: erl_client.erl <action list>\n"),
+    io:format("Usage: erl_client.erl <server node> <action list>\n"),
     io:format("Actions:\n"),
     io:format("   status node Node\n"),
     io:format("   status guid Guid\n"),
@@ -55,21 +54,22 @@ usage() ->
 main([]) ->
     usage();
 main(Args) ->
-    Head = list_to_atom(hd(Args)),
+    Server = list_to_atom(hd(Args)),
+    Head = list_to_atom(lists:nth(2, Args)),
     case Head of
         status ->
-            Sec  = list_to_atom(lists:nth(2, Args)),
+            Sec  = list_to_atom(lists:nth(3, Args)),
             case Sec of
                 node ->
                     Tup = {status, node, tl(Args)};
                 pid ->
-                    Node= list_to_atom(lists:nth(3, Args)),
-                    Pid = lists:nth(4, Args),
+                    Node= list_to_atom(lists:nth(4, Args)),
+                    Pid = lists:nth(5, Args),
                     Tup = {status, pid, {Node, Pid}};
                 guid  ->
                     Tup = {status, guid, tl(Args)}
             end;
         process ->
-            Tup = {process, lists:nth(2, Args), tl(Args)}
+            Tup = {process, lists:nth(3, Args), tl(Args)}
     end,
-    test(?NODE, Tup).
+    test(Server, Tup).
