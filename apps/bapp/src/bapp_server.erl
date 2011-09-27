@@ -43,7 +43,6 @@ init(Args) ->
 %% {process, Cmd, Dir} to run given command with a given directory
 %% ------------------------------------------------------------------
 handle_call({status, node, Node}, _From, _State) ->
-%    _R1 = pid_manager:info_node(Node), % info_node will clean-up undefined
     Result = pid_manager:info_node(Node),
     {reply, ok, Result};
 handle_call({status, guid, Guid}, _From, _State) ->
