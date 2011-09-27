@@ -43,7 +43,7 @@ add(GUID, Node, PidStr) ->
 delete(Node, PidStr) ->
     case pinfo(Node, PidStr) of
         undefined ->
-            ets:match_delete(?TABLE, {'_', '_', PidStr});
+            ets:match_delete(?TABLE, {'_', Node, PidStr});
         _other ->
             skip
     end.
@@ -68,4 +68,4 @@ info_pid(PidStr) ->
 %% ------------------------------------------------------------------
 info_guid(Guid) ->
     Tup = ets:lookup(?TABLE, Guid),
-    [{G,N,P,pinfo(N,P)} || {G,N,P} <- Tup].
+    [{G,N,P,pinfo(N,P)} || {G,N,P} <- Tup, delete(N,P) /= true].
