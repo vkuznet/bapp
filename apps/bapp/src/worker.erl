@@ -77,7 +77,7 @@ loop(GUID, Cmd, [File|Files]) ->
             % add it.
             io:format("New job ~p ~p~n", [Node, Cmd++" "++File]),
             Pid = spawn(Node, os, cmd, [Cmd++" "++File]),
-            case pid_manager:add(GUID, Node, Pid) of
+            case pid_manager:add(GUID, Node, pid_to_list(Pid)) of
                 skip ->
                     loop(GUID, Cmd, [File|Files]);
                 true ->

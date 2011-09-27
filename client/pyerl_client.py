@@ -24,7 +24,7 @@ class DASOptionParser:
     def __init__(self):
         status_usage  = "Obtain status on a server. Acceptable formats:\n"
         status_usage += "--status=guid,123\n"
-        status_usage += "--status=pid,mynode.718.0\n"
+        status_usage += "--status=pid,mynode,0.718.0\n"
         status_usage += "--status=node,mynode\n"
         test_dir = '/'.join(__file__.split('/')[:-1])
         if  test_dir == '.':
@@ -65,17 +65,21 @@ def test_black_box(sock, server, icmd, idir):
     eterm = pyerl.rpc(sock, server, api, args)
     return eterm
 
-def get_status(sock, server, node, what, value):
+def get_status(sock, server, node, uinput):
+    what  = uinput[0]
     api   = "handle_call"
     status= pyerl.mk_atom("status")
     if  what == 'node':
+        value = uinput[-1]
         val = pyerl.mk_atom(value)
     elif what == 'guid':
+        value = uinput[-1]
         val = pyerl.mk_int(int(value))
     elif what == 'pid':
-        a,b,c = value.split('.')
-        nodename = pyerl.mk_atom(a)
-        ppid = pyerl.mk_string('<0.%s.%s>' % (b, c))
+        rnode = uinput[1] # remote node
+        pid   = uinput[2] # remote pid
+        nodename = pyerl.mk_atom(rnode)
+        ppid = pyerl.mk_string(pid)
         val   = pyerl.mk_tuple((nodename, ppid))
     else:
         raise Exception('Unknown message: %s' %  what)
@@ -106,8 +110,7 @@ def connect(host, cookie, cmd, idir, status=''):
     # call test code
     server = "bapp_server"
     if  status:
-        what, val = status
-        eterm = get_status(sock, server, name, what, val)
+        eterm = get_status(sock, server, name, status)
     else:
         eterm = test_black_box(sock, server, cmd, idir)
     print "server reply:", eterm
