@@ -15,22 +15,25 @@ info() ->
     ets:info(?TABLE).
 
 %% ------------------------------------------------------------------
-%% Helper function to extract second element of Pid.
-%% For Pid structure explanation see
+%% Helper function to extract Pid ids for given position.
+%% The Pid has structure the following strucuture: <A.B.C>, where
+%% A represents node number, B and C are process numbers
+%% (first 15 bits and 16-18 bits, respectively), for more info see
 %% http://stackoverflow.com/questions/243363/can-someone-explain-the-structure-of-a-pid-in-erlang
 %% ------------------------------------------------------------------
-pid_b(Pid) ->
-    lists:nth(2, [binary_to_list(S) || S <- re:split( pid_to_list(Pid), "\\." )] ).
+pid_pos(Pos, Pid) ->
+    lists:nth(Pos, [binary_to_list(S) || S <- re:split( pid_to_list(Pid), "\\." )] ).
 
 %% ------------------------------------------------------------------
 %% Process info wrapper obtain Pid info on remote Node.
-%% We match on a second id of Pid using remote processes call, which
-%% return Pid table on remote node.
+%% We match on a second/third ids of Pid using remote processes call,
+%% which return Pid table on remote node.
 %% ------------------------------------------------------------------
 pinfo(Node, PidStr) ->
     List = [binary_to_list(S) || S <- re:split(PidStr, "\\.")],
     Processes = rpc:call(Node, erlang, processes, []),
-    MatchPid = [P || P <- Processes, pid_b(P) == lists:nth(2, List) ],
+    MatchPid = [P || P <- Processes, pid_pos(2, P) == lists:nth(2, List),
+                                     pid_pos(3, P) == lists:nth(3, List) ],
     if  length(MatchPid) == 1 ->
         ProcInfo = rpc:call(Node, erlang, process_info, [hd(MatchPid)]),
         case ProcInfo of
