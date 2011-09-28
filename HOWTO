@@ -163,4 +163,5 @@ References:
 3. https://bitbucket.org/basho/rebar/wiki/ReleaseHandling
 4. http://erlang.org/pipermail/erlang-questions/2011-April/057908.html
 5. http://www.apacheserver.net/Riak-compile-error-Module-gen_server2-potentially-included-by-two-at1312518.htm
-
+6. How to write upgrade procedure
+   http://www.metabrew.com/article/erlang-rebar-tutorial-generating-releases-upgrades
