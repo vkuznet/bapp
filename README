@@ -16,6 +16,11 @@ apps/bapp/src/bapp_server.erl, apps/bapp/src/worker.erl.
 Dependencies:
 =============
 
+For node autodiscovery on a LAN we depends on nodefinder package, see
+http://code.google.com/p/nodefinder/
+Based on its license (New BSD license, http://www.opensource.org/licenses/bsd-license.php)
+its code distribution is allowed to be included with proper COPYING message.
+
 To run the server and erlang client you just need Erlang to be installed
 on your system. While python client depends on pyerl (python-erlang binding),
 see

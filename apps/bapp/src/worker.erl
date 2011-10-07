@@ -9,18 +9,16 @@
 %% Establish connection with given set of nodes
 %% ------------------------------------------------------------------
 
-connect([N|Tail]) ->
-    case net_kernel:connect(N) of
-        true ->
-%            io:format("node ~p is available~n", [N]);
-            ok;
-        false ->
-%            io:format("node ~p is unavailable~n", [N])
-            skip
-    end,
-    connect(Tail);
-connect([]) ->
-    ok.
+%connect([N|Tail]) ->
+%    case net_kernel:connect(N) of
+%        true ->
+%            ok;
+%        false ->
+%            skip
+%    end,
+%    connect(Tail);
+%connect([]) ->
+%    ok.
 
 %% ------------------------------------------------------------------
 %% Get UNIX timestamp
@@ -64,7 +62,7 @@ get_slot([]) ->
 %% execution.
 %% ------------------------------------------------------------------
 loop(GUID, Cmd, [File|Files]) ->
-    connect(['mynode@lnxcu9', 'mynode@lnx301', 'mynode@lnx7228']),
+%    connect(['mynode@lnxcu9', 'mynode@lnx301', 'mynode@lnx7228']),
     Nodes = [node()|nodes()],
     case get_slot(Nodes) of
          none ->
@@ -75,7 +73,7 @@ loop(GUID, Cmd, [File|Files]) ->
             % add it to pid_manager, but during that time, process can
             % be done/fail/etc., such that pid_manager will not be able to
             % add it.
-            io:format("New job ~p ~p~n", [Node, Cmd++" "++File]),
+            io:format("~nNew job ~p ~p~n", [Node, Cmd++" "++File]),
             Pid = spawn(Node, os, cmd, [Cmd++" "++File]),
             case pid_manager:add(GUID, Node, pid_to_list(Pid)) of
                 skip ->
