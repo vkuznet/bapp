@@ -4,27 +4,10 @@
 -export([execute/2,black_box/3]).
 
 %% ------------------------------------------------------------------
-%% Establish connection with given set of nodes
-%% ------------------------------------------------------------------
-
-connect([N|Tail]) ->
-    case net_kernel:connect(N) of
-        true ->
-            io:format("node ~p is available~n", [N]);
-        false ->
-%            io:format("node ~p is unavailable~n", [N])
-            skip
-    end,
-    connect(Tail);
-connect([]) ->
-    ok.
-
-%% ------------------------------------------------------------------
 %% Concurrently execute black_box function for a given set of files
 %% ------------------------------------------------------------------
 
 execute(Cmd, Files) ->
-    connect(['mynode@lnxcu9', 'mynode@lnx301', 'mynode@lnx7228']),
     Nodes = [node()|nodes()],
     io:format("Available nodes: ~p~n", [Nodes]),
     Parent = self(),
