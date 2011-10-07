@@ -6,21 +6,6 @@
 -define(NODE_THRESHOLD, 2).
 
 %% ------------------------------------------------------------------
-%% Establish connection with given set of nodes
-%% ------------------------------------------------------------------
-
-%connect([N|Tail]) ->
-%    case net_kernel:connect(N) of
-%        true ->
-%            ok;
-%        false ->
-%            skip
-%    end,
-%    connect(Tail);
-%connect([]) ->
-%    ok.
-
-%% ------------------------------------------------------------------
 %% Get UNIX timestamp
 %% Courtesy of
 %% http://erlangdevelopers.splinder.com/post/16144262/stdlib-unix-timestamp-in-erlang
@@ -62,7 +47,6 @@ get_slot([]) ->
 %% execution.
 %% ------------------------------------------------------------------
 loop(GUID, Cmd, [File|Files]) ->
-%    connect(['mynode@lnxcu9', 'mynode@lnx301', 'mynode@lnx7228']),
     Nodes = [node()|nodes()],
     case get_slot(Nodes) of
          none ->
