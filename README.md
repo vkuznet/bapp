@@ -1,6 +1,3 @@
-Description:
-============
-
 Simple batch application (bapp) written in Erlang. The purpose of this
 application is to demonstrate Erlang strength in building distributed
 and concurrent applications. The bapp package provides OTP Erlang 
@@ -14,7 +11,7 @@ You may modify this behavior as you please, see
 apps/bapp/src/bapp_server.erl, apps/bapp/src/worker.erl.
 
 Dependencies:
-=============
+-------------
 
 For node autodiscovery on a LAN we depends on nodefinder package, see
 http://code.google.com/p/nodefinder/
@@ -28,22 +25,21 @@ https://github.com/hamano/python-erlang-interface.git
 git clone git://github.com/hamano/python-erlang-interface.git
 
 Installation:
-=============
+-------------
 
 1. Untar bapp.tar.gz
 2. run make
 3. tune-up rel/mynode/etc/vm.args (if required)
 4. start-up server as (using bash shell):
 
-   # export PATH=$PWD/rel/mynode/bin:$PATH
-   # mynode console|start|stop
+```
+# export PATH=$PWD/rel/mynode/bin:$PATH
+# mynode console|start|stop
+```
 
 The console mode will start the application and gives you access to
 standard Erlang console, while start|stop action will either
 start or stop the application (aka daemon mode).
-
-Configuration:
-==============
 
 Server configuration:
 ---------------------
@@ -59,7 +55,9 @@ Adjust host, node name, cookie parameters in pyerl_client.py or erl_client.erl
 scripts to reflect server parameters.
 
 Code structure:
-===============
+---------------
+
+```
 .
 ├── apps
 │   └── bapp
@@ -70,6 +68,7 @@ Code structure:
 ├── ebin
 └── rel
     └── files
+```
 
 The apps area contains Erlang server code.
 The client area contains erlang and python client code.
@@ -81,13 +80,13 @@ a "test executable". It reads given input file and produce
 an output file in the same area.
 
 References:
-===========
+-----------
 1. http://www.erlang.org/doc/design_principles/users_guide.html 
 
 Author:
-=======
+-------
 Valentin Kuznetsov <vkuznet [at] gmail [dot] com>
 
 License:
-========
+--------
 MIT, http://www.opensource.org/licenses/mit-license.php
