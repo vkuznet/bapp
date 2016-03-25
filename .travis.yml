@@ -1,0 +1,4 @@
+language: erlang
+sudo: false
+otp_release:
+  - 18.2.1
