@@ -1,3 +1,9 @@
+# bapp
+
+[![Build Status](https://travis-ci.org/vkuznet/bapp.svg?branch=master)](https://travis-ci.org/vkuznet/bapp)
+[![GoDoc](https://godoc.org/github.com/vkuznet/bapp?status.svg)](https://godoc.org/github.com/vkuznet/bapp)
+
+
 Simple batch application (bapp) written in Erlang. The purpose of this
 application is to demonstrate Erlang strength in building distributed
 and concurrent applications. The bapp package provides OTP Erlang 
